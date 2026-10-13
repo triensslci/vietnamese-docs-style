@@ -10,6 +10,35 @@
 
 # Tiếng Việt
 
+## Công cụ hiện tại / Current tools
+
+Giữ tên skill `vietnamese-docx`. Hỗ trợ text trực tiếp và DOCX theo loại/mẫu;
+quy trình chính nằm trong [SKILL.md](SKILL.md). Nguồn mẫu ứng viên và trạng thái
+kiểm tra nằm trong [template-sources.md](references/template-sources.md).
+
+Python 3.10+; LibreOffice cần được cài riêng để render. Cài dependency:
+
+```bash
+python -m pip install -r requirements-dev.txt
+python scripts/create_demo.py --output-dir artifacts/demo
+python scripts/validate_docx.py artifacts/demo/office-filled.docx --profile minutes-general
+python scripts/render_docx.py artifacts/demo/office-filled.docx --png
+python -m pytest -q
+```
+
+Điền mẫu có token `{{name}}`: `python scripts/fill_template.py template.docx output.docx --values values.json`.
+Mẫu không token có thể sửa bằng `scripts/edit_docx.py` với hash nguồn và slot map đã xác minh. Ba starter do dự án viết nằm ở `assets/templates/`; xem [cách chọn](references/starter-templates.md).
+
+Mẫu tùy chỉnh dùng `--profile custom --config rules.json`; ví dụ config ở
+`assets/rules/custom-example.json`. Không áp setup mặc định lên mẫu có sẵn.
+
+Validator trả pass/fail/partial cho phạm vi đã kiểm tra, luôn công bố unchecked;
+không chứng nhận pháp lý hay bố cục. Render tạo file thật, cần mở xem ảnh để
+nghiệm thu. Xem [tooling.md](references/tooling.md) cho exit code và giới hạn.
+Demo là dữ liệu giả có nhãn, không phải mẫu hành chính được chứng nhận. Đóng gói local bằng `python scripts/package_skill.py`; gói loại dữ liệu nghiên cứu, file bên thứ ba và runtime. Đánh giá hành vi text/query ở `evals/` là đánh giá thủ công, không phải benchmark model độc lập.
+
+---
+
 ## Giới thiệu
 
 **AI có thể tạo tài liệu Word, nhưng liệu AI có thực sự hiểu cách người Việt Nam trình bày văn bản?**
@@ -67,6 +96,7 @@ Skill xác định nhóm tài liệu trước khi lựa chọn những quy tắc
 
 | Profile | Nhóm tài liệu |
 |---|---|
+| `office` | Tài liệu văn phòng, thông báo và báo cáo nội bộ |
 | `administrative` | Văn bản hành chính |
 | `academic` | Báo cáo học thuật, tiểu luận, nghiên cứu |
 | `proposal` | Đề xuất dự án, kế hoạch |
@@ -131,8 +161,20 @@ vietnamese-docs-style/
 ├── scripts/
 │   ├── build_docx.py
 │   ├── validate_docx.py
-│   └── render_docx.py
+│   ├── render_docx.py
+│   ├── document_rules.py
+│   ├── docx_package.py
+│   ├── fill_template.py
+│   ├── edit_docx.py
+│   ├── create_templates.py
+│   ├── create_demo.py
+│   └── package_skill.py
 ├── assets/
+│   ├── templates/
+│   └── rules/
+├── evals/
+├── requirements.txt
+├── requirements-dev.txt
 └── tests/
 ```
 
@@ -256,6 +298,7 @@ The skill identifies the document category before selecting the appropriate form
 
 | Profile | Intended use |
 |---|---|
+| `office` | General office documents and internal notices/reports |
 | `administrative` | Administrative documents |
 | `academic` | Academic reports, essays, research papers |
 | `proposal` | Project proposals and planning documents |
@@ -320,8 +363,20 @@ vietnamese-docs-style/
 ├── scripts/
 │   ├── build_docx.py
 │   ├── validate_docx.py
-│   └── render_docx.py
+│   ├── render_docx.py
+│   ├── document_rules.py
+│   ├── docx_package.py
+│   ├── fill_template.py
+│   ├── edit_docx.py
+│   ├── create_templates.py
+│   ├── create_demo.py
+│   └── package_skill.py
 ├── assets/
+│   ├── templates/
+│   └── rules/
+├── evals/
+├── requirements.txt
+├── requirements-dev.txt
 └── tests/
 ```
 

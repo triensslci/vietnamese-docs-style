@@ -1,32 +1,23 @@
-﻿# Bảng định tuyến Hồ sơ Tài liệu (Document Profiles Routing)
+# Chọn loại tài liệu
 
-> **Mục đích**: Bảng này hướng dẫn AI agent cách lựa chọn các quy tắc định dạng và thể thức phù hợp dựa trên loại tài liệu người dùng yêu cầu.
+Profile chọn ngữ nghĩa và thể thức; đầu ra text/DOCX chọn riêng.
 
-AI agent phải xác định loại tài liệu (profile) trước khi bắt đầu tạo file. Nếu không chắc chắn, hãy sử dụng `custom` hoặc hỏi lại người dùng.
+| Profile | Khi dùng | Cấu trúc khi chưa có mẫu |
+| --- | --- | --- |
+| office | Thông báo, ghi nhớ, báo cáo công việc và tài liệu nội bộ văn phòng | Theo mục đích/tổ chức; không tự thêm quốc hiệu hoặc bìa học thuật |
+| administrative | Công văn, quyết định, tờ trình, thông báo hành chính đúng phạm vi áp dụng | Theo tên loại và mẫu quy định |
+| academic | Báo cáo học phần, nghiên cứu, khóa luận | Theo trường/khoa và loại bài; IMRAD chỉ khi phù hợp |
+| proposal | Đề xuất, kế hoạch công việc | Vấn đề, mục tiêu, phương án, nguồn lực, tiến độ, đề nghị quyết định nếu cần |
+| minutes-administrative | Biên bản trong thủ tục hành chính cụ thể | Mẫu đúng thủ tục, thành phần ký theo tình huống |
+| minutes-general | Họp nhóm, nội bộ doanh nghiệp | Bối cảnh, thảo luận, quyết định, công việc, người phụ trách |
+| custom | Mẫu hoặc quy tắc riêng | Giữ cấu trúc mẫu; có thể kết hợp ngữ nghĩa profile khác |
 
-## Bảng định tuyến
+Báo cáo nội bộ không tự động là hành chính. Kế hoạch cơ quan nhà nước khác
+kế hoạch công ty. Loại ngoài bảng giữ theo người dùng, không ép vào nhóm gần tên.
 
-| Profile | Tiêu chuẩn / Chuẩn mực | Quốc hiệu & Tiêu ngữ | Trang Bìa (Cover Page) | Kính gửi / Nơi nhận | Ngôi kể | Dùng Bullet (`•`) | Auto Numbering | Shading Bảng |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`administrative`** (Công văn, Quyết định, Tờ trình...) | **Nghị định 30/2020/NĐ-CP** | **Bắt buộc** | Không | **Bắt buộc** | Ngôi thứ 3 (Khách quan) | Cấm | Cấm (Đánh số tay) | Cấm |
-| **`academic`** (Báo cáo, Tiểu luận, Khóa luận...) | Mặc định (A4, TNR) hoặc Template của Trường | Không (trừ khi template yêu cầu) | **Có** (Thường xuyên) | Không | Linh hoạt (Ngôi thứ 3 hoặc "Chúng tôi") | Được phép | Được phép | Được phép (Tùy chọn) |
-| **`proposal`** (Đề xuất dự án, Kế hoạch kinh doanh) | Mặc định (A4, TNR) hoặc Template của Tổ chức | Không | **Có** | Không (Thường có Thư ngỏ thay thế) | Linh hoạt | Được phép | Được phép | Được phép |
-| **`minutes-administrative`** (Biên bản hành chính nhà nước) | **Nghị định 30/2020/NĐ-CP** + TT01 | **Bắt buộc** | Không | Không | Ngôi thứ 3 | Cấm | Cấm (Đánh số tay) | Cấm |
-| **`minutes-general`** (Biên bản họp nhóm, nội bộ) | Cấu trúc Meeting Minutes chung (A4, TNR) | Không | Không | Không | Linh hoạt | Được phép | Được phép | Được phép |
-| **`custom`** (Mẫu riêng) | Tuân thủ tuyệt đối Template/Yêu cầu của User | Tùy template | Tùy template | Tùy template | Tùy template | Tùy template | Tùy template | Tùy template |
+Chưa có mẫu: A4, Times New Roman, body 13pt, đen là mặc định tiện dụng của skill,
+không phải luật cho mọi tài liệu. Lề, bìa, thư ngỏ, chữ ký, shading và ngôi kể
+chọn theo mục đích. Không cấm bullet/numbering chung cho mọi profile.
 
-## Nguyên tắc áp dụng (Priority Chain)
-
-Trong trường hợp có mâu thuẫn giữa các quy định, AI agent phải ưu tiên theo thứ tự sau (từ cao xuống thấp):
-
-1.  **Yêu cầu trực tiếp của người dùng**: VD: "Hãy dùng bullet `•` cho quyết định này". (Dù sai NĐ30 nhưng user yêu cầu thì phải làm theo).
-2.  **Template của tổ chức/trường học**: Nếu user tải lên một template có sẵn.
-3.  **Quy định chuyên ngành**: Ví dụ, Giáo án sẽ có cấu trúc riêng không theo NĐ30.
-4.  **Nghị định 30/2020/NĐ-CP**: Áp dụng chặt chẽ cho profile `administrative` và `minutes-administrative`.
-5.  **Mặc định của Skill**: Các quy tắc chung (A4, Times New Roman, v.v.) được định nghĩa trong `style-spec.md`.
-
-## Ghi chú về Style
-*   Tất cả các profile mặc định sử dụng khổ giấy **A4 (210 x 297mm)** trừ khi có yêu cầu khác.
-*   Màu chữ mặc định cho phần nội dung (Body text) luôn là **Đen (#000000)**.
-*   Font chữ ưu tiên là **Times New Roman**.
-
+Ưu tiên theo SKILL.md. Chọn mẫu ở `template-selection.md`, nguồn ứng viên ở
+`template-sources.md`. Không dùng TT01/văn bản cũ làm căn cứ hiện hành chỉ vì có sẵn.

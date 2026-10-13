@@ -1,0 +1,10 @@
+{
+  "title": "Báo cáo thử nghiệm tạo tài liệu tiếng Việt",
+  "author": "Nhóm thử nghiệm (giả định)",
+  "purpose": "Kiểm tra cách tổ chức báo cáo ngắn bằng tiếng Việt và giữ nội dung đầu vào.",
+  "method": "Tạo mẫu có token, điền chuỗi tiếng Việt và đối chiếu nội dung sau khi lưu.",
+  "results": "Ví dụ này trình bày các phần của báo cáo. Không có khảo sát hoặc số liệu thực nghiệm để kết luận hiệu quả.",
+  "limitations": "Mẫu không thay thế hướng dẫn của trường hoặc yêu cầu riêng của giảng viên.",
+  "references": "Tài liệu minh họa không sử dụng nguồn nghiên cứu bên ngoài.",
+  "status_note": "Đây là tài liệu kiểm thử cấu trúc; dữ liệu minh họa, không phải kết quả nghiên cứu đã công bố."
+}

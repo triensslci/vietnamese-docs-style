@@ -1,0 +1,12 @@
+{
+  "profile": "custom",
+  "source": "Example only; not an institution-specific standard",
+  "font": "Arial",
+  "color": "000000",
+  "body_size_pt": 12,
+  "line_spacing": 1.15,
+  "page_cm": [21, 29.7],
+  "allow_landscape": false,
+  "margins_cm": {"left": [2.5, 2.5], "right": [2, 2], "top": [2.5, 2.5], "bottom": [2.5, 2.5]},
+  "required_text": ["Nội dung", "Kết luận"]
+}

@@ -1,118 +1,32 @@
-# Validation Checklist — Kiểm tra trước khi lưu DOCX
+# Kiểm tra theo đầu ra và mẫu
 
-Chạy qua 10 mục này trước mỗi lần `doc.save()`. Mỗi mục chỉ cần YES/NO. Nếu có NO, sửa ngay.
+Ghi từng kiểm tra là đạt, không đạt, chưa kiểm tra hoặc không áp dụng.
+Phân biệt bản nháp có trường thiếu đã công bố với bản hoàn chỉnh.
 
----
+## Mọi đầu ra
+- Đúng phạm vi, loại văn bản, ngôn ngữ và độ dài yêu cầu.
+- Không thêm dữ kiện, căn cứ, nguồn hoặc quyết định không có đầu vào.
+- Đánh số đúng cấp/thứ tự; dẫn chiếu cập nhật sau chỉnh sửa.
+- Thuật ngữ, số liệu, thời gian nhất quán; biên tập không đổi nghĩa.
+- Công bố placeholder còn lại và trạng thái bản nháp.
 
-## 1. Màu sắc (CRITICAL)
+## DOCX
+- Đúng mẫu, phiên bản, thành phần bắt buộc của đúng loại.
+- Khổ, hướng và lề từng section theo mẫu, không ép mọi trang thành A4 dọc.
+- Font/cỡ/màu/spacing theo thành phần, gồm style kế thừa, bảng, header/footer.
+- Heading, numbering, restart/continue, mục lục và dẫn chiếu đúng.
+- Bảng vừa vùng in, không mất chữ/ảnh hoặc trang trắng bất thường.
+- Số trang, trang đầu khác biệt và section break đúng mẫu.
+- Giữ phần ngoài phạm vi chỉnh sửa khi sửa tài liệu sẵn có.
 
-- [ ] Toàn bộ text trong file có màu `#000000` không?
-- [ ] Không có heading xanh, xám, hay màu nào khác?
+## Giới hạn hiện tại
 
-```python
-# Quick check: confirm all style color settings use BLACK
-assert doc.styles['Heading 1'].font.color.rgb == BLACK
-assert doc.styles['Heading 2'].font.color.rgb == BLACK
-assert doc.styles['Heading 3'].font.color.rgb == BLACK
-```
+Validator hỗ trợ cấu hình profile/template, khổ/lề từng section, font/màu
+trực tiếp và chuỗi style, placeholder trong body/bảng/header/footer, literal
+bắt buộc và bullet/shading khi cấu hình yêu cầu. Đọc `tooling.md` và trường
+unchecked trong report; chưa kiểm tra toàn bộ bố cục, luật hoặc nội dung Word.
 
-## 2. Bullet dots (CRITICAL)
-
-- [ ] KHÔNG có ký tự `•` (bullet dot) ở bất kỳ đâu trong file?
-- [ ] Tất cả danh sách dùng `- ` (cấp 1), `+ ` (cấp 2), `* ` (cấp 3)?
-- [ ] KHÔNG dùng auto-numbering của Word?
-
-```python
-# Quick check
-full_text = "\n".join([p.text for p in doc.paragraphs])
-assert "•" not in full_text, "FOUND BULLET DOT — replace with '-'"
-```
-
-## 3. Font
-
-- [ ] Body text là Times New Roman, đen (#000000)?
-- [ ] Heading là Times New Roman, đen (#000000)?
-- [ ] Text trong bảng là Times New Roman, đen (#000000)?
-- [ ] Không có màu tự chế nào (phải là #000000)?
-
-## 4. Dòng trống giữa section
-
-- [ ] Có dòng trống giữa các section lớn (PHẦN I, PHẦN II, ...)?
-- [ ] Có dòng trống giữa các đoạn văn dài?
-
-## 5. Căn lề
-
-- [ ] Body text căn đều hai bên (JUSTIFY)?
-- [ ] Cover page căn giữa (CENTER)?
-- [ ] Signature căn phải (RIGHT)?
-
-## 6. Bảng biểu
-
-- [ ] Tất cả bảng dùng style Table Grid?
-- [ ] Header row in đậm (bold)?
-- [ ] Không có màu nền (shading) trong ô?
-- [ ] Bảng rủi ro có đủ 3 cột: Rủi ro | Phòng ngừa | Khắc phục?
-- [ ] Bảng thành viên có đủ 4 cột: STT | Họ tên | Vai trò | Ban?
-
-## 7. Ngôi kể & Ngôn ngữ
-
-- [ ] Dùng ngôi thứ ba khách quan (trừ Thư ngỏ)?
-- [ ] Có dùng các cụm từ hành chính chuẩn ("Căn cứ vào...", "Từ những phân tích trên...")?
-- [ ] Không có "Tôi", "Tớ", "Mình" trong body text?
-
-## 8. Định lượng (Quantification)
-
-- [ ] Mọi mục tiêu có con số cụ thể?
-- [ ] Các tỉ lệ % có ý nghĩa và đo lường được?
-
-## 9. Cấu trúc tài liệu
-
-- [ ] Đúng loại tài liệu người dùng yêu cầu? (Proposal / Report / Minutes / General)
-- [ ] Đầy đủ các phần bắt buộc của loại tài liệu đó?
-- [ ] Có trang bìa với đầy đủ: tên trường, tiêu đề, phụ đề, thành viên, địa điểm, năm?
-
-## 6. Page setup
-- [ ] Khổ A4 (210 × 297 mm)?
-- [ ] Margins: Trái 3cm, Phải 1.5cm, Trên 2cm, Dưới 2cm?
-
-## 7. Profile-specific checks
-- [ ] Đối với `administrative`: Có Quốc hiệu, tiêu ngữ, nơi nhận?
-- [ ] Đối với `academic`: KHÔNG dùng Quốc hiệu trừ khi có template?
-- [ ] Đối với `administrative`: Không dùng shading trong bảng?
-- [ ] Đối với `administrative`: Dấu chấm phẩy (;) cuối các căn cứ, dòng cuối là dấu chấm (.)?
-- [ ] Page break giữa các section lớn?
-
----
-
-## Tự động kiểm tra nhanh (Python snippet)
-
-```python
-def validate_doc(doc):
-    errors = []
-    full_text = "\n".join([p.text for p in doc.paragraphs])
-
-    # 1. No bullet dot
-    if "•" in full_text:
-        errors.append("Có bullet dot (•) — thay bằng '-'")
-
-    # 2. All headings black
-    for level in [1, 2, 3]:
-        style_name = f'Heading {level}'
-        if style_name in [s.name for s in doc.styles]:
-            color = doc.styles[style_name].font.color.rgb
-            if color and color != RGBColor(0, 0, 0):
-                errors.append(f"{style_name} có màu {color}, cần #000000")
-
-    # 3. Page size
-    section = doc.sections[0]
-    if abs(section.page_width - Inches(8.5)) > 1:
-        errors.append("Page width không phải Letter (8.5 inch)")
-    if abs(section.left_margin - Cm(3.0)) > 10000:
-        errors.append("Left margin không phải 3cm")
-
-    # 4. Justified body
-    if doc.styles['Normal'].paragraph_format.alignment != WD_ALIGN_PARAGRAPH.JUSTIFY:
-        errors.append("Body text không căn đều (JUSTIFY)")
-
-    return errors
-```
+Render helper chuyển DOCX thật qua LibreOffice; `--png` tạo ảnh bằng PyMuPDF.
+Chỉ ghi đã kiểm tra trực quan khi đã mở xem kết quả. Thiếu công cụ thì công bố
+giới hạn. Không coi bullet, shading, thiếu bìa, ngôi thứ nhất hoặc mục tiêu
+chưa định lượng là lỗi chung.

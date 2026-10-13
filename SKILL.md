@@ -1,143 +1,93 @@
-﻿---
+---
 name: vietnamese-docx
 description: >
-  Tạo, định dạng và kiểm tra tài liệu DOCX tiếng Việt, gồm văn bản hành chính,
-  báo cáo học thuật, đề xuất dự án và biên bản. Sử dụng khi người dùng yêu cầu
-  tạo hoặc chỉnh sửa file Word tiếng Việt. Chỉ áp dụng thể thức Nghị định
-  30/2020/NĐ-CP khi tài liệu thực sự là văn bản hành chính hoặc người dùng
-  yêu cầu rõ ràng; không tự áp dụng NĐ30 cho mọi báo cáo học thuật.
+  Soạn, biên tập văn bản tiếng Việt và tạo/chỉnh sửa DOCX văn phòng, học thuật,
+  hành chính theo mẫu phù hợp. Dùng cả khi chỉ cần đoạn văn, đề mục hoặc danh
+  sách đánh số trong chat. Chọn thể thức theo loại văn bản và nơi tiếp nhận;
+  chỉ áp dụng Nghị định 30/2020/NĐ-CP trong phạm vi phù hợp.
 ---
 
 # Vietnamese DOCX
 
-Tạo tài liệu Word tiếng Việt đúng loại văn bản, đúng nguồn chuẩn và có thể
-kiểm chứng bằng cấu trúc lẫn kết quả render.
+Tạo văn bản đúng mục đích, đúng mẫu, giữ dữ kiện và có thể chỉnh sửa tiếp.
 
-## Nguyên tắc ưu tiên
+## Chọn cách xử lý
 
-Khi các yêu cầu xung đột, áp dụng thứ tự sau:
+Xác định độc lập: đầu ra (text/DOCX), loại tài liệu và nơi tiếp nhận.
+
+- Đoạn văn/danh sách trong chat: trả text trực tiếp; không tạo file hoặc bìa.
+- Tạo Word: chọn profile theo `references/document-profiles.md`.
+- Có mẫu hoặc file cần sửa: đọc `references/template-selection.md`; giữ cấu trúc ngoài phạm vi chỉnh sửa.
+- Đề mục/đánh số: đọc `references/numbering-and-structure.md`.
+
+Suy ra từ ngữ cảnh, không chỉ từ từ khóa “báo cáo”. Hỏi khi khác biệt về loại
+hoặc nơi tiếp nhận làm thay đổi đáng kể đầu ra. Không bắt chọn tên profile.
+
+## Ưu tiên
 
 1. Yêu cầu trực tiếp của người dùng.
-2. Template hoặc quy định của trường/cơ quan do người dùng cung cấp.
-3. Quy định chuyên ngành tương ứng.
-4. Nghị định 30/2020/NĐ-CP đối với văn bản hành chính.
-5. Mặc định của skill.
+2. Mẫu và hướng dẫn của nơi tiếp nhận đúng loại, đúng phiên bản.
+3. Quy định chuyên ngành/pháp lý áp dụng.
+4. Mặc định của skill.
 
-Không trình bày sở thích mặc định của skill như một yêu cầu pháp lý.
+Nếu yêu cầu/mẫu khác quy định áp dụng, chỉ rõ khác biệt trước khi tuyên bố
+kết quả tuân thủ. Không gọi sở thích định dạng là yêu cầu pháp lý.
 
-## Quy trình
+## Reference theo nhu cầu
 
-### 1. Xác định profile tài liệu
+- Loại tài liệu: `references/document-profiles.md`.
+- Chọn/tìm/sử dụng mẫu: `references/template-selection.md`.
+- Starter đi kèm: `references/starter-templates.md`.
+- Nguồn mẫu và văn bản thực tế: `references/template-sources.md`.
+- Hành chính: `references/administrative-format-nd30.md`; đối chiếu nguồn gốc và hiệu lực khi kết quả phụ thuộc quy định hiện hành.
+- Học thuật: `references/academic-report.md`.
+- Biên bản: `references/meeting-minutes.md`.
+- Biên tập: `references/editorial-quality-vi.md`.
+- Đánh số: `references/numbering-and-structure.md`.
+- Triển khai Word: `references/style-spec.md`; lệnh, cấu hình và giới hạn ở `references/tooling.md`.
+- Trước bàn giao: `references/validation-checklist.md`.
 
-Chọn một trong các profile:
+Chỉ đọc phần liên quan. Không nạp toàn bộ `references/source-documents/train_data/`;
+đây là tư liệu nghiên cứu, không phải bộ quy tắc có thẩm quyền.
 
-- `administrative`: công văn, quyết định, thông báo, tờ trình, giấy mời.
-- `academic`: báo cáo nghiên cứu, tiểu luận, bài tập môn học.
-- `proposal`: đề xuất dự án hoặc kế hoạch.
-- `minutes-administrative`: biên bản hành chính.
-- `minutes-general`: biên bản họp nhóm hoặc doanh nghiệp.
-- `custom`: có template riêng do người dùng cung cấp.
+## Nội dung
 
-Đọc `references/document-profiles.md` để biết thêm chi tiết về từng profile.
+Không bịa dữ kiện, nguồn, căn cứ, cơ quan, số văn bản, người ký hoặc quyết định
+cuộc họp. Mẫu thực tế chỉ dùng học cấu trúc và cách diễn đạt; không mang thông
+tin của văn bản cũ sang tài liệu mới. Giữ khác biệt giữa ý kiến, đề xuất,
+quyết định và nghĩa vụ khi biên tập.
 
-Nếu loại tài liệu ảnh hưởng đáng kể đến cấu trúc mà chưa xác định được,
-hỏi người dùng một câu ngắn. Không hỏi lại thông tin đã có.
+Bản nháp có thể dùng `[CẦN BỔ SUNG: ...]` và công bố trường thiếu. Hỏi khi thiếu
+thông tin làm thay đổi bản chất tài liệu. Không thêm số liệu để câu có vẻ cụ thể.
 
-### 2. Đọc reference phù hợp
+## DOCX
 
-- Với `administrative` và `minutes-administrative`, đọc `references/administrative-format-nd30.md`.
-- Với `academic`, đọc `references/academic-report.md`.
-- Với biên bản, đọc `references/meeting-minutes.md`.
-- Với mọi tài liệu tiếng Việt, đọc `references/editorial-quality-vi.md`.
-- Đọc `references/validation-checklist.md` trước khi kiểm tra output.
-- Đọc `references/style-spec.md` để biết thông số kỹ thuật cấu trúc tài liệu.
+Ưu tiên mẫu người dùng hoặc mẫu chính thức đã xác minh phù hợp. Không có mẫu:
+dùng cấu trúc tối thiểu theo profile và công bố mặc định quan trọng.
+`scripts/build_docx.py` là thư viện helper, không phải generator đầy đủ.
+Không chạy `setup_document` lên mẫu sẵn để ghi đè style.
+Mẫu token dùng `fill_template.py`; mẫu không token có thể dùng `edit_docx.py`
+với hash nguồn và slot map đã xác minh. Xem `references/tooling.md`.
 
-Không tải reference không liên quan.
+Giữ section, heading, numbering, header/footer, bảng, mục lục và trường số trang
+của mẫu. Không áp quốc hiệu, bìa, thư ngỏ, nơi nhận hoặc cấm bullet cho mọi tài liệu.
 
-### 3. Xử lý thông tin thiếu
+## Kiểm tra và bàn giao
 
-Không tự bịa:
-
-- Tên cơ quan.
-- Số và ký hiệu văn bản.
-- Căn cứ pháp lý.
-- Người ký.
-- Số liệu nghiên cứu.
-- Nguồn tham khảo.
-- Ngày, địa điểm hoặc thành viên.
-
-Dùng placeholder có nhãn `[CẦN BỔ SUNG: ...]` nếu người dùng cho phép tạo
-bản nháp. Hỏi lại nếu thiếu dữ liệu làm thay đổi tính hợp lệ của tài liệu.
-
-### 4. Tạo DOCX
-
-Ưu tiên dùng template trong `assets/` (nếu có) và script `scripts/build_docx.py`.
-
-Mặc định cho văn bản hành chính khi không có template khác:
-
-- Khổ A4 (210 x 297 mm).
-- Font Times New Roman, Unicode.
-- Màu chữ đen (#000000).
-- Lề trong phạm vi NĐ30 (trái 30-35mm, phải 15-20mm, trên/dưới 20-25mm).
-- Body căn đều hai lề (Justify).
-- Cỡ chữ, vị trí và kiểu chữ theo từng thành phần thể thức.
-
-Không áp dụng tự động các quy tắc sau cho mọi profile:
-
-- Quốc hiệu và tiêu ngữ.
-- Trang bìa.
-- Nơi nhận.
-- Thư ngỏ.
-- Ngôi thứ ba.
-- Mục tiêu bắt buộc phải có số.
-- Cấm bullet hoặc auto-numbering.
-- Cấm shading của bảng.
-
-Chỉ áp dụng khi profile hoặc template yêu cầu.
-
-### 5. Biên tập ngôn ngữ
-
-Bảo đảm (theo `references/editorial-quality-vi.md`):
-
-- Câu rõ chủ thể và hành động.
-- Không bịa dữ kiện để làm văn bản có vẻ cụ thể.
-- Hạn chế sáo rỗng và từ nối dư thừa.
-- Không lạm dụng bị động.
-- Thuật ngữ và cách xưng hô nhất quán.
-- Phân biệt dữ kiện, nhận định và kiến nghị.
-- Không tuyên bố có nguồn nếu chưa kiểm chứng.
-
-### 6. Kiểm tra
-
-Chạy:
+Text: rà dữ kiện, cấp đề mục, thứ tự và phạm vi yêu cầu.
+DOCX: theo checklist, dùng helper khi phù hợp và kiểm tra hiển thị thật:
 
 ```bash
-python scripts/validate_docx.py <file.docx> --profile <profile>
-python scripts/render_docx.py <file.docx>
+python scripts/validate_docx.py output.docx --profile academic
 ```
 
-Validation phải kiểm tra:
+Validator kiểm tra thuộc tính đã hỗ trợ trong từng section, style kế thừa,
+body/bảng/header/footer; nhận `--config` cho mẫu và `--draft` cho bản nháp.
+Đọc `references/tooling.md` để hiểu pass/fail/partial và danh sách unchecked.
+Các thuộc tính chưa kiểm tra không được gọi là đã đạt.
+Render thật bằng `scripts/render_docx.py output.docx --png`; thiếu renderer
+phải báo chưa kiểm tra. Mở xem ảnh mọi trang trước khi kết luận bố cục đạt.
 
-* Tất cả section và kích thước trang (A4).
-* Toàn bộ lề.
-* Font và màu trong paragraph, bảng, header và footer.
-* Các trường bắt buộc theo profile.
-* Heading, numbering và page break.
-* Bảng tràn lề.
-* Placeholder chưa được xử lý.
-* Render lỗi, trang trắng bất thường hoặc nội dung bị cắt.
-
-Không bàn giao nếu còn lỗi nghiêm trọng. Nếu không thể sửa vì thiếu dữ liệu,
-nêu rõ trường còn thiếu.
-
-### 7. Bàn giao
-
-Trả về:
-
-* File DOCX hoàn chỉnh.
-* Profile đã áp dụng.
-* Chuẩn hoặc template đã sử dụng.
-* Những placeholder còn lại, nếu có.
-
-Không gọi tài liệu là “chuẩn NĐ30” nếu chỉ áp dụng một phần của NĐ30.
-
+Sửa lỗi làm sai nội dung/mất bố cục trước bàn giao. Trả file khi đã tạo file;
+nêu mẫu/chuẩn, trường thiếu và kiểm tra chưa thực hiện. Không gọi tài liệu
+“chuẩn NĐ30” chỉ vì đúng font và lề.

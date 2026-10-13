@@ -1,252 +1,280 @@
-﻿from docx import Document
-from docx.shared import Pt, Cm, Inches, RGBColor, Emu
+"""Reusable DOCX helpers. Template edits preserve existing formatting by default."""
+from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.oxml.ns import qn, nsdecls
-from docx.oxml import parse_xml
+from docx.enum.section import WD_ORIENT
+from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+try:
+    from .document_rules import load_rules, section_rules, ADMIN
+except ImportError:
+    from document_rules import load_rules, section_rules, ADMIN
 
-BLACK = RGBColor(0x00, 0x00, 0x00)
+BLACK = RGBColor(0, 0, 0)
 
-def setup_document(doc, profile="administrative"):
-    """Cấu hình trang giấy và style cơ bản theo profile."""
-    section = doc.sections[0]
-    section.page_width = Cm(21.0)   # A4
-    section.page_height = Cm(29.7)  # A4
-    section.top_margin = Cm(2.0)
-    section.bottom_margin = Cm(2.0)
-    
-    # NĐ30: Lề trái 3.0-3.5cm, phải 1.5-2.0cm
-    section.left_margin = Cm(3.0)
-    section.right_margin = Cm(1.5)
-    
-    setup_styles(doc)
 
-def setup_styles(doc):
-    """Cấu hình các style mặc định."""
-    # Normal (Body)
-    style = doc.styles['Normal']
-    sf = style.font
-    sf.name = 'Times New Roman'
-    sf.size = Pt(13) # NĐ30: 13-14pt
-    sf.color.rgb = BLACK
-    rPr = style.element.get_or_add_rPr()
-    rPr.append(parse_xml(f'<w:rFonts {nsdecls("w")} w:eastAsia="Times New Roman"/>'))
-    pf = style.paragraph_format
-    pf.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    pf.space_before = Pt(0)
-    pf.space_after = Pt(12)
-    pf.line_spacing = 1.15
+def setup_document(doc, profile='administrative', config=None):
+    """Apply explicit configuration to a new document, never to a retained template."""
+    rules = load_rules(profile, config)
+    if profile == 'custom' and config is None:
+        return doc
+    if rules['sections'] and len(rules['sections']) != len(doc.sections):
+        raise ValueError('Create the configured sections before applying setup_document')
+    for index, section in enumerate(doc.sections):
+        spec = section_rules(rules, index)
+        if spec['page_cm']:
+            section.page_width, section.page_height = map(Cm, spec['page_cm'])
+            section.orientation = (WD_ORIENT.LANDSCAPE if spec['page_cm'][0] > spec['page_cm'][1]
+                                   else WD_ORIENT.PORTRAIT)
+        margins = spec['margins_cm']
+        if not margins and profile != 'custom':
+            margins = {side: [value, value] for side, value in
+                       {'left': 2.5, 'right': 2.0, 'top': 2.5, 'bottom': 2.5}.items()}
+        for side, bounds in margins.items():
+            setattr(section, side + '_margin', Cm(bounds[0]))
+    setup_styles(doc, rules)
+    if profile in ADMIN:
+        add_page_numbers(doc, position='header', show_first=False)
+    return doc
 
-    # Heading 1
-    h1 = doc.styles['Heading 1']
-    h1.font.name = 'Times New Roman'
-    h1.font.size = Pt(16)
-    h1.font.bold = True
-    h1.font.color.rgb = BLACK
-    h1.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    h1.paragraph_format.space_before = Pt(24)
-    h1.paragraph_format.space_after = Pt(12)
-    h1.paragraph_format.keep_with_next = True
 
-    # Heading 2
-    h2 = doc.styles['Heading 2']
-    h2.font.name = 'Times New Roman'
-    h2.font.size = Pt(13)
-    h2.font.bold = True
-    h2.font.color.rgb = BLACK
-    h2.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    h2.paragraph_format.space_before = Pt(18)
-    h2.paragraph_format.space_after = Pt(8)
-    h2.paragraph_format.keep_with_next = True
+def setup_styles(doc, rules=None):
+    rules = rules or load_rules()
+    names = ['Normal', 'Title', 'Subtitle', 'Heading 1', 'Heading 2', 'Heading 3',
+             'List Bullet', 'List Bullet 2', 'List Bullet 3', 'List Number']
+    for name in names:
+        if name not in doc.styles:
+            continue
+        style = doc.styles[name]
+        if rules['font']:
+            style.font.name = rules['font']
+            fonts = style.element.get_or_add_rPr().get_or_add_rFonts()
+            for key in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'):
+                fonts.attrib.pop(qn('w:' + key), None)
+            for key in ('ascii', 'hAnsi', 'eastAsia', 'cs'):
+                fonts.set(qn('w:' + key), rules['font'])
+        if rules['color']:
+            style.font.color.rgb = RGBColor.from_string(rules['color'])
+            color = style.element.rPr.find(qn('w:color'))
+            for key in ('themeColor', 'themeTint', 'themeShade'):
+                color.attrib.pop(qn('w:' + key), None)
+        style.font.size = Pt(rules['body_size_pt'])
+        if name == 'Title':
+            style.font.size = Pt(rules['body_size_pt'] + 3)
+            style.font.bold = True
+            if style.element.pPr is not None:
+                border = style.element.pPr.find(qn('w:pBdr'))
+                if border is not None:
+                    style.element.pPr.remove(border)
+        if name.startswith('Heading'):
+            style.font.bold = True
+            style.paragraph_format.keep_with_next = True
+            style.paragraph_format.space_before = Pt(12)
+            style.paragraph_format.space_after = Pt(6)
+    normal = doc.styles['Normal'].paragraph_format
+    normal.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    normal.space_after = Pt(6)
+    normal.line_spacing = rules['line_spacing']
+    if rules['profile'] in ADMIN:
+        normal.first_line_indent = Cm(1)
+    for name, spec in rules['style_rules'].items():
+        style = doc.styles[name] if name in doc.styles else doc.styles.add_style(name, WD_STYLE_TYPE.PARAGRAPH)
+        if style.base_style is None and name != 'Normal':
+            style.base_style = doc.styles['Normal']
+        if 'font' in spec:
+            style.font.name = spec['font']
+            fonts = style.element.get_or_add_rPr().get_or_add_rFonts()
+            for key in ('asciiTheme', 'hAnsiTheme', 'eastAsiaTheme', 'cstheme'):
+                fonts.attrib.pop(qn('w:' + key), None)
+            for key in ('ascii', 'hAnsi', 'eastAsia', 'cs'):
+                fonts.set(qn('w:' + key), spec['font'])
+        if 'color' in spec:
+            style.font.color.rgb = RGBColor.from_string(spec['color'])
+            color = style.element.rPr.find(qn('w:color'))
+            for key in ('themeColor', 'themeTint', 'themeShade'):
+                color.attrib.pop(qn('w:' + key), None)
+        if 'size_pt' in spec:
+            style.font.size = Pt(spec['size_pt'][0])
+        for prop in ('bold', 'italic'):
+            if prop in spec:
+                setattr(style.font, prop, spec[prop])
 
-    # Heading 3
-    h3 = doc.styles['Heading 3']
-    h3.font.name = 'Times New Roman'
-    h3.font.size = Pt(13)
-    h3.font.bold = True
-    h3.font.color.rgb = BLACK
-    h3.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    h3.paragraph_format.space_before = Pt(12)
-    h3.paragraph_format.space_after = Pt(6)
-    h3.paragraph_format.keep_with_next = True
+
+def add_page_numbers(doc, position='footer', show_first=True, size=13):
+    """Add PAGE fields to a new document. Never use as a template reset operation."""
+    if position not in ('header', 'footer'):
+        raise ValueError('Page number position must be header or footer')
+    seen = set()
+    for index, section in enumerate(doc.sections):
+        section.different_first_page_header_footer = index == 0 and not show_first
+        story = getattr(section, position)
+        part = story.part
+        if str(part.partname) in seen:
+            continue
+        seen.add(str(part.partname))
+        if any('PAGE' in (node.text or '').split() for node in story._element.iter(qn('w:instrText'))):
+            continue
+        p = story.paragraphs[0] if len(story.paragraphs) == 1 and not story.paragraphs[0].text else story.add_paragraph()
+        p.style = doc.styles['Normal']
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.first_line_indent = Cm(0)
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+        p.paragraph_format.line_spacing = 1.0
+        run = p.add_run()
+        run.font.size, run.bold, run.italic = Pt(size), False, False
+        for kind, text in [('begin', None), (None, ' PAGE '), ('separate', None), (None, '1'), ('end', None)]:
+            node = OxmlElement('w:fldChar' if kind else ('w:instrText' if text.strip() == 'PAGE' else 'w:t'))
+            if kind:
+                node.set(qn('w:fldCharType'), kind)
+            else:
+                node.text = text
+                node.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            run._r.append(node)
+    settings = doc.settings.element
+    update = settings.find(qn('w:updateFields'))
+    if update is None:
+        update = OxmlElement('w:updateFields')
+        settings.append(update)
+    update.set(qn('w:val'), 'true')
+
 
 def add_body(doc, text):
-    p = doc.add_paragraph(text)
-    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    for r in p.runs:
-        r.font.name = 'Times New Roman'
-        r.font.size = Pt(13)
-        r.font.color.rgb = BLACK
-    return p
+    return doc.add_paragraph(text, style='Normal')
+
 
 def add_blank(doc):
-    p = doc.add_paragraph()
-    pf = p.paragraph_format
-    pf.space_before = Pt(0)
-    pf.space_after = Pt(0)
-    return p
+    paragraph = doc.add_paragraph()
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(0)
+    return paragraph
 
-def add_centered(doc, text, size=16, bold=True, italic=False):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run(text)
-    r.font.name = 'Times New Roman'
-    r.font.size = Pt(size)
-    r.font.color.rgb = BLACK
-    r.bold = bold
-    r.italic = italic
-    return p
 
-def add_right(doc, text, bold=False, italic=False, size=13):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r = p.add_run(text)
-    r.font.name = 'Times New Roman'
-    r.font.size = Pt(size)
-    r.font.color.rgb = BLACK
-    r.bold = bold
-    r.italic = italic
-    return p
+def add_centered(doc, text, size=None, bold=True, italic=False):
+    paragraph = doc.add_paragraph()
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    paragraph.paragraph_format.first_line_indent = Cm(0)
+    run = paragraph.add_run(text)
+    if size is not None:
+        run.font.size = Pt(size)
+    run.bold, run.italic = bold, italic
+    return paragraph
+
+
+def add_right(doc, text, bold=False, italic=False, size=None):
+    paragraph = add_centered(doc, text, size, bold, italic)
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    return paragraph
+
 
 def add_italic(doc, text):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    r = p.add_run(text)
-    r.italic = True
-    r.font.name = 'Times New Roman'
-    r.font.size = Pt(13)
-    r.font.color.rgb = BLACK
-    return p
+    paragraph = add_body(doc, text)
+    for run in paragraph.runs:
+        run.italic = True
+    return paragraph
 
-def add_bullet(doc, text, level=1, profile="administrative"):
-    if profile in ["administrative", "minutes-administrative"]:
-        prefixes = {1: "- ", 2: "+ ", 3: "* "}
-        prefix = prefixes.get(level, "- ")
-        p = doc.add_paragraph(prefix + text)
-        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        for r in p.runs:
-            r.font.name = 'Times New Roman'
-            r.font.size = Pt(13)
-            r.font.color.rgb = BLACK
-        if level == 2:
-            p.paragraph_format.left_indent = Cm(1.27)
-        elif level == 3:
-            p.paragraph_format.left_indent = Cm(2.54)
-    else:
-        style = 'List Bullet' if level == 1 else f'List Bullet {level}'
-        p = doc.add_paragraph(text, style=style)
-        for r in p.runs:
-            r.font.name = 'Times New Roman'
-            r.font.size = Pt(13)
-            r.font.color.rgb = BLACK
-    return p
 
-def add_bullets(doc, items, level=1, profile="administrative"):
-    for item in items:
-        add_bullet(doc, item, level, profile)
+def add_bullet(doc, text, level=1, profile='administrative'):
+    if level not in (1, 2, 3):
+        raise ValueError('Bullet level must be 1, 2 or 3')
+    if profile in ADMIN:
+        paragraph = doc.add_paragraph({1: '- ', 2: '+ ', 3: '* '}[level] + text)
+        paragraph.paragraph_format.left_indent = Cm((level-1) * 1.0)
+        paragraph.paragraph_format.first_line_indent = Cm(0)
+        return paragraph
+    return doc.add_paragraph(text, style='List Bullet' if level == 1 else f'List Bullet {level}')
 
-def set_table_grid_style(table, profile="administrative"):
+
+def add_bullets(doc, items, level=1, profile='administrative'):
+    return [add_bullet(doc, text, level, profile) for text in items]
+
+
+def add_numbered(doc, items, start=1):
+    """Create a real Word decimal list with explicit start, independent of previous lists."""
+    if not isinstance(start, int) or start < 1:
+        raise ValueError('start must be a positive integer')
+    numbering = doc.part.numbering_part.element
+    ids = [int(node.get(qn('w:abstractNumId'))) for node in numbering.findall(qn('w:abstractNum'))]
+    abstract_id = max(ids, default=-1) + 1
+    abstract = OxmlElement('w:abstractNum')
+    abstract.set(qn('w:abstractNumId'), str(abstract_id))
+    level = OxmlElement('w:lvl')
+    level.set(qn('w:ilvl'), '0')
+    for tag, value in [('start', str(start)), ('numFmt', 'decimal'), ('lvlText', '%1.'), ('lvlJc', 'left')]:
+        child = OxmlElement('w:' + tag)
+        child.set(qn('w:val'), value)
+        level.append(child)
+    props = OxmlElement('w:pPr')
+    indent = OxmlElement('w:ind')
+    indent.set(qn('w:left'), '567')
+    indent.set(qn('w:hanging'), '283')
+    props.append(indent)
+    level.append(props)
+    abstract.append(level)
+    numbering.append(abstract)
+    num = numbering.add_num(abstract_id)
+    result = []
+    for text in items:
+        paragraph = doc.add_paragraph(text)
+        numbering_props = paragraph._p.get_or_add_pPr().get_or_add_numPr()
+        numbering_props.get_or_add_ilvl().val = 0
+        numbering_props.get_or_add_numId().val = num.numId
+        result.append(paragraph)
+    return result
+
+
+def set_table_grid_style(table, profile='administrative'):
     table.style = 'Table Grid'
-    if profile in ["administrative", "minutes-administrative"]:
-        for row in table.rows:
-            for cell in row.cells:
-                tc = cell._tc
-                tcPr = tc.get_or_add_tcPr()
-                shading = tcPr.find(qn('w:shd'))
-                if shading is not None:
-                    tcPr.remove(shading)
 
-def add_table(doc, headers, rows, profile="administrative"):
-    tbl = doc.add_table(rows=1 + len(rows), cols=len(headers))
-    set_table_grid_style(tbl, profile)
-    for i, h in enumerate(headers):
-        c = tbl.cell(0, i)
-        c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = c.paragraphs[0].add_run(h)
-        r.bold = True
-        r.font.name = 'Times New Roman'
-        r.font.size = Pt(13)
-        r.font.color.rgb = BLACK
-    for ri, row in enumerate(rows):
-        for ci, val in enumerate(row):
-            c = tbl.cell(ri + 1, ci)
-            c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-            r = c.paragraphs[0].add_run(str(val))
-            r.font.name = 'Times New Roman'
-            r.font.size = Pt(13)
-            r.font.color.rgb = BLACK
-    return tbl
 
-def add_cover_page(doc, org_name, title, subtitle, team_data, location="Hà Nội", year="2026"):
-    add_centered(doc, org_name, 16, True)
-    add_blank(doc)
-    add_blank(doc)
-    add_centered(doc, title, 16, True)
-    add_blank(doc)
+def add_table(doc, headers, rows, profile='administrative'):
+    if not headers or any(len(row) != len(headers) for row in rows):
+        raise ValueError('Table rows must match the nonempty header')
+    table = doc.add_table(rows=1, cols=len(headers))
+    set_table_grid_style(table, profile)
+    repeat = OxmlElement('w:tblHeader')
+    table.rows[0]._tr.get_or_add_trPr().append(repeat)
+    for cell, text in zip(table.rows[0].cells, headers):
+        paragraph = cell.paragraphs[0]
+        paragraph.paragraph_format.first_line_indent = Cm(0)
+        paragraph.add_run(str(text)).bold = True
+    for values in rows:
+        for cell, value in zip(table.add_row().cells, values):
+            paragraph = cell.paragraphs[0]
+            paragraph.paragraph_format.first_line_indent = Cm(0)
+            paragraph.add_run(str(value))
+    return table
+
+
+def add_cover_page(doc, org_name, title, subtitle, team_data, location=None, year=None):
+    add_centered(doc, org_name)
+    doc.add_paragraph(title, style='Title')
     if subtitle:
-        add_centered(doc, subtitle, 14, True)
-    add_blank(doc)
+        add_centered(doc, subtitle, bold=False)
     if team_data:
-        tbl = doc.add_table(rows=len(team_data), cols=2)
-        tbl.style = 'Table Grid'
-        tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
-        for i, (lbl, val) in enumerate(team_data):
-            c0 = tbl.cell(i, 0)
-            c0.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.RIGHT
-            r0 = c0.paragraphs[0].add_run(lbl)
-            r0.bold = True; r0.font.name = 'Times New Roman'; r0.font.size = Pt(13)
-            c1 = tbl.cell(i, 1)
-            c1.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.LEFT
-            r1 = c1.paragraphs[0].add_run(val)
-            r1.font.name = 'Times New Roman'; r1.font.size = Pt(13)
-        for row in tbl.rows:
-            row.cells[0].width = Cm(4)
-            row.cells[1].width = Cm(10)
-    add_blank(doc)
-    add_centered(doc, f"{location}, {year}", 13, False, True)
+        add_table(doc, ['Thông tin', 'Nội dung'], team_data, 'academic')
+    if location or year:
+        add_centered(doc, ', '.join(str(x) for x in (location, year) if x), bold=False)
     doc.add_page_break()
+
 
 def add_cover_letter(doc, greeting, body_paragraphs, signer_name):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run("THƯ NGỎ")
-    r.bold = True
-    r.font.name = 'Times New Roman'
-    r.font.size = Pt(14)
-    r.font.color.rgb = BLACK
-    add_blank(doc)
-    p_greet = doc.add_paragraph(greeting)
-    p_greet.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    for run in p_greet.runs:
-        run.font.name = 'Times New Roman'
-        run.font.size = Pt(13)
-        run.font.color.rgb = BLACK
-    add_blank(doc)
-    for bp_text in body_paragraphs:
-        add_body(doc, bp_text)
-        add_blank(doc)
-    add_right(doc, "Trân trọng,", False, False)
-    add_right(doc, signer_name, True)
+    doc.add_paragraph('THƯ NGỎ', style='Title')
+    add_body(doc, greeting)
+    for text in body_paragraphs:
+        add_body(doc, text)
+    add_right(doc, 'Trân trọng,')
+    add_right(doc, signer_name, bold=True)
     doc.add_page_break()
 
+
 def add_h1(doc, text):
-    p = doc.add_heading(text, level=1)
-    for r in p.runs:
-        r.font.name = 'Times New Roman'
-        r.font.color.rgb = BLACK
-    return p
+    return doc.add_heading(text, level=1)
+
 
 def add_h2(doc, text):
-    p = doc.add_heading(text, level=2)
-    for r in p.runs:
-        r.font.name = 'Times New Roman'
-        r.font.color.rgb = BLACK
-    return p
+    return doc.add_heading(text, level=2)
+
 
 def add_h3(doc, text):
-    p = doc.add_heading(text, level=3)
-    for r in p.runs:
-        r.font.name = 'Times New Roman'
-        r.font.color.rgb = BLACK
-    return p
-
+    return doc.add_heading(text, level=3)

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "administrative-notice",
+    "template": "administrative-notice.docx",
+    "profile": "administrative",
+    "origin": "project-authored",
+    "version": 1,
+    "sha256": "56fbf22cf84f716ebf208bb0f2ea63af9e65e5e61f6543581cd596408ec79a96",
+    "source": "https://datafiles.chinhphu.vn/cpp/files/vbpq/2020/03/30.signed.pdf",
+    "scope": "Project-authored notice starter; NĐ30 Appendix I and Appendix III model 1.4; human review required",
+    "external_template_copied": false,
+    "status": "dummy values filled; supported checks passed; rendered page inspected",
+    "limitations": "Starter with single-line slots. Adapt long content and organization-specific requirements; not certified compliance.",
+    "visual_trial": "reviewed",
+    "verified_on": "2026-10-13",
+    "verification_scope": "Trial input only; new content requires another validation/render pass"
+  },
+  {
+    "id": "academic-short-report",
+    "template": "academic-short-report.docx",
+    "profile": "academic",
+    "origin": "project-authored",
+    "version": 1,
+    "sha256": "38f8147699a5fb04faa31c5c692699f89479e2d39b8fd31ad2b5768623859102",
+    "source": "Original project structure",
+    "scope": "Project-authored short report; no university compliance claim",
+    "external_template_copied": false,
+    "status": "dummy values filled; supported checks passed; rendered page inspected",
+    "limitations": "Starter with single-line slots. Adapt long content and organization-specific requirements; not certified compliance.",
+    "visual_trial": "reviewed",
+    "verified_on": "2026-10-13",
+    "verification_scope": "Trial input only; new content requires another validation/render pass"
+  },
+  {
+    "id": "office-minutes",
+    "template": "office-minutes.docx",
+    "profile": "minutes-general",
+    "origin": "project-authored",
+    "version": 1,
+    "sha256": "e01ddbcd9bc9f8f73271530a7c62f3eddd4fcc0f9aee6bd6e5ad66b1dfa3fc75",
+    "source": "Original project structure",
+    "scope": "Project-authored internal meeting notes starter",
+    "external_template_copied": false,
+    "status": "dummy values filled; supported checks passed; rendered page inspected",
+    "limitations": "Starter with single-line slots. Adapt long content and organization-specific requirements; not certified compliance.",
+    "visual_trial": "reviewed",
+    "verified_on": "2026-10-13",
+    "verification_scope": "Trial input only; new content requires another validation/render pass"
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "method": "Manual agent execution and review; not an independent model benchmark or automatic wording test",
+  "cases": [
+    {
+      "id": "short-text",
+      "request": "Viết trang trọng hơn, tối đa hai câu: Nhóm em làm xong giao diện, nhưng API chưa xong nên chưa demo được.",
+      "expected": "Text only; preserve completed UI, incomplete API and resulting inability to demo; no invented date/percentage."
+    },
+    {
+      "id": "clauses",
+      "request": "Trả text, chia thành 3 khoản: chuẩn bị là thu thập dữ liệu; thực hiện có hai điểm kiểm tra dữ liệu và tạo bản nháp; kiểm tra là đối chiếu bản nháp.",
+      "expected": "Three numbered clauses; clause 2 has a) and b); no DOCX or added actions."
+    },
+    {
+      "id": "continue",
+      "request": "Mục trước là 2.3. Tiếp tục với hai mục: Kiểm tra nội dung; Kiểm tra bố cục. Chỉ trả đề mục.",
+      "expected": "2.4 and 2.5; keep the input hierarchy; no prose or file."
+    },
+    {
+      "id": "unapproved-decision",
+      "request": "Tóm tắt ghi chú họp: A đề xuất giao B làm bản nháp trước 15/10. Chưa ai đồng ý và chưa chốt người thực hiện.",
+      "expected": "Record a proposal, not an assignment or agreed deadline; do not invent consensus."
+    },
+    {
+      "id": "office-docx",
+      "request": "Tạo DOCX biên bản họp nội bộ từ dữ liệu giả định trong office-minutes.values.json; không dùng mẫu cơ quan nhà nước.",
+      "expected": "Internal meeting starter, no national heading; explicit dummy data; filled DOCX with actual render QA."
+    },
+    {
+      "id": "academic-docx",
+      "request": "Tạo báo cáo học thuật ngắn theo academic-short-report.values.json, chưa có mẫu trường và không có số liệu nghiên cứu thật.",
+      "expected": "Generic short report, no university compliance claim, no invented research or mandatory thesis cover."
+    },
+    {
+      "id": "administrative-docx",
+      "request": "Tạo bản thử nghiệm thông báo theo dữ liệu administrative-notice.values.json, tham chiếu thể thức NĐ30. Không tạo chữ ký hay dấu.",
+      "expected": "Named-document layout rather than official-letter layout; component sizes; source and compliance limits disclosed."
+    },
+    {
+      "id": "custom-uit",
+      "request": "Dùng bản mẫu biên bản hội đồng UIT đã giữ lại; chỉ điền metadata và một hàng dữ liệu thử đã xác minh, giữ nguyên phần còn lại.",
+      "expected": "Retain template package, numbering, tables and page furniture; source hash checked; untouched member/paragraph fidelity proven; not presented as a complete official record."
+    },
+    {
+      "id": "institution-required",
+      "request": "Tạo khóa luận theo đúng mẫu trường của tôi, nhưng chưa cung cấp tên trường hoặc mẫu.",
+      "expected": "Ask which school/program/template determines the required format; do not select UIT or another university by guess."
+    },
+    {
+      "id": "office-general",
+      "request": "Tạo DOCX thông báo nội bộ cho nhóm A: họp 09 giờ ngày 15/10/2026 ở phòng thử nghiệm, trao đổi bản nháp, đề nghị chuẩn bị góp ý; toàn bộ là tình huống giả định.",
+      "expected": "General office profile; no national heading, legal document number, academic cover or forced minutes structure; preserve supplied facts."
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "profile": "academic",
+  "source": "Project-authored short report; no university compliance claim",
+  "margins_cm": {
+    "left": [
+      2.5,
+      2.5
+    ],
+    "right": [
+      2,
+      2
+    ],
+    "top": [
+      2.5,
+      2.5
+    ],
+    "bottom": [
+      2.5,
+      2.5
+    ]
+  },
+  "style_rules": {
+    "Normal": {
+      "size_pt": [
+        13,
+        13
+      ]
+    },
+    "Title": {
+      "size_pt": [
+        16,
+        16
+      ],
+      "bold": true
+    }
+  },
+  "required_text": [
+    "Mục đích",
+    "Phương pháp",
+    "Kết quả",
+    "Hạn chế",
+    "Tài liệu tham khảo"
+  ]
+}
