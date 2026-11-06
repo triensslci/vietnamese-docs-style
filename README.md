@@ -29,6 +29,15 @@ python -m pytest -q
 Điền mẫu có token `{{name}}`: `python scripts/fill_template.py template.docx output.docx --values values.json`.
 Mẫu không token có thể sửa bằng `scripts/edit_docx.py` với hash nguồn và slot map đã xác minh. Ba starter do dự án viết nằm ở `assets/templates/`; xem [cách chọn](references/starter-templates.md).
 
+Phạm vi văn bản hành chính – công vụ (tra cứu 2026-11-06):
+
+| Khối | Căn cứ hiện hành | Reference |
+| --- | --- | --- |
+| Văn bản hành chính | NĐ 30/2020/NĐ-CP: 29 loại, viết tắt, số ký hiệu, TM./KT./Q./TL./TUQ., nơi nhận, phụ lục, mật/khẩn, bản sao, viết hoa | [administrative-doc-types-nd30.md](references/administrative-doc-types-nd30.md), [administrative-format-nd30.md](references/administrative-format-nd30.md) |
+| Văn bản của Đảng | QĐ 399-QĐ/TW (09/01/2026), HD 05-HD/VPTW (27/5/2026) thay QĐ 66, HD 36 | [party-documents.md](references/party-documents.md); profile `party` |
+| Văn bản quy phạm pháp luật | Luật 64/2025/QH15, Luật 87/2025/QH15, NĐ 78/2025 và Phụ lục I NĐ 187/2025 | [legal-normative-documents.md](references/legal-normative-documents.md); `assets/rules/legal-normative.json` |
+| Văn phong | NĐ30 Phụ lục I–II, tài liệu nghiệp vụ | [administrative-writing-style.md](references/administrative-writing-style.md) |
+
 Mẫu tùy chỉnh dùng `--profile custom --config rules.json`; ví dụ config ở
 `assets/rules/custom-example.json`. Không áp setup mặc định lên mẫu có sẵn.
 
